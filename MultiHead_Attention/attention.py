@@ -20,7 +20,9 @@ class MultiHeadAttention(nn.Module):
 
     def forward(self, q, k, v, mask = None):
         # 输入维度应该为[batch_size, max_len, d_model]，即qkv的维度
-        batch_size, max_len, _ = q.size()
+        batch_size, q_len, _ = q.size()
+        batch_size, k_len, _ = k.size()
+        batch_size, v_len, _ = v.size()
 
         # 线性变换得到真正参与attention计算的QKV
         # [batch_size, max_len, d_model]
@@ -32,9 +34,9 @@ class MultiHeadAttention(nn.Module):
         # [batch_size, max_len, d_model] --> [batch_size, max_len, n_head, head_dim]
         # attention_score的矩阵计算是在序列内，每个头单独进行，所以需要进行维度变换
         # [batch_size, max_len, n_head, head_dim] --> [batch_size, n_head, max_len, head_dim]
-        Q = Q.view(batch_size, self.n_head, max_len, self.head_dim).transpose(1, 2)
-        K = K.view(batch_size, self.n_head, max_len, self.head_dim).transpose(1, 2)
-        V = V.view(batch_size, self.n_head, max_len, self.head_dim).transpose(1, 2)
+        Q = Q.view(batch_size, q_len, self.n_head, self.head_dim).transpose(1, 2)
+        K = K.view(batch_size, k_len, self.n_head, self.head_dim).transpose(1, 2)
+        V = V.view(batch_size, v_len, self.n_head, self.head_dim).transpose(1, 2)
 
         # 注意力得分的计算
         attention_score = (Q @ K.transpose(-1, -2)) / math.sqrt(self.head_dim)      # 注意此处是每个头单独进行所以是head_dim而不是d_model
@@ -49,7 +51,7 @@ class MultiHeadAttention(nn.Module):
         # 拼接多头
         # 先变换回原始维度，再通过contiguous保证内存空间的连续，不影响view的拼接操作
         attention_score = attention_score.transpose(1, 2).contiguous()
-        attention_score = attention_score.view(batch_size, max_len, self.d_model)
+        attention_score = attention_score.view(batch_size, q_len, self.d_model)
 
         # 线性变换得到最终输出
         output = self.w_combine(attention_score)

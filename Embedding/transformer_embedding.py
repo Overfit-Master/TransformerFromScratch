@@ -1,16 +1,16 @@
 import torch.nn as nn
 import math
 
-from token_embedding import TokenEmbedding
-from positional_embedding import PositionalEmbedding
+from Embedding.token_embedding import TokenEmbedding
+from Embedding.positional_embedding import PositionalEmbedding
 
 
 class TransformerEmbedding(nn.Module):
-    def __init__(self, vocab_size, d_model, max_len, drop_prob, device):
+    def __init__(self, vocab_size, d_model, max_len, drop_prob, device, padding_idx):
         super(TransformerEmbedding, self).__init__()
 
-        self.token_embedding = TokenEmbedding(vocab_size, d_model)
-        self.positional_embedding = PositionalEmbedding( d_model, max_len, device)
+        self.token_embedding = TokenEmbedding(vocab_size, d_model, padding_idx)
+        self.positional_embedding = PositionalEmbedding(d_model, max_len, device)
         self.dropout = nn.Dropout(p=drop_prob)
         self.d_model = d_model
 

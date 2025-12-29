@@ -3,7 +3,7 @@ import torch.nn as nn
 from MultiHead_Attention.attention import MultiHeadAttention
 from Normalization.layer_norm import LayerNorm
 from Embedding.transformer_embedding import TransformerEmbedding
-from feed_forward import PositionWiseFeedForward
+from Encoder.feed_forward import PositionWiseFeedForward
 
 class EncoderLayer(nn.Module):
     def __init__(self, d_model, ffn_hidden, n_head, dropout=0.1):
@@ -12,7 +12,7 @@ class EncoderLayer(nn.Module):
         self.attention = MultiHeadAttention(d_model, n_head)
         self.norm1 = LayerNorm(d_model)
         self.dropout1 = nn.Dropout(p=dropout)
-        self.ffn = PositionWiseFeedForward(d_model, ffn_hidden)
+        self.ffn = PositionWiseFeedForward(d_model, ffn_hidden, dropout)
         self.norm2 = LayerNorm(d_model)
         self.dropout2 = nn.Dropout(p=dropout)
 
@@ -33,13 +33,13 @@ class EncoderLayer(nn.Module):
 
 # 复现多层encoder layer组成完整的encoder
 class Encoder(nn.Module):
-    def __init__(self, vocab_size, max_len, d_model, ffn_hidden, n_head, n_layer, device, dropout=0.1):
+    def __init__(self, vocab_size, max_len, d_model, ffn_hidden, n_head, n_layer, dropout, device, padding_idx):
         super(Encoder, self).__init__()
 
-        self.embedding = TransformerEmbedding(vocab_size, d_model, max_len, dropout, device)
+        self.embedding = TransformerEmbedding(vocab_size, d_model, max_len, dropout, device, padding_idx)
         self.layers = nn.ModuleList(
             [
-                EncoderLayer(d_model, ffn_hidden, n_head)
+                EncoderLayer(d_model, ffn_hidden, n_head, dropout)
                 for _  in range(n_layer)
             ]
         )
