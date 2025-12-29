@@ -48,7 +48,7 @@ class MultiHeadAttention(nn.Module):
 
         # 拼接多头
         # 先变换回原始维度，再通过contiguous保证内存空间的连续，不影响view的拼接操作
-        attention_score.transpose(1, 2).contiguous()
+        attention_score = attention_score.transpose(1, 2).contiguous()
         attention_score = attention_score.view(batch_size, max_len, self.d_model)
 
         # 线性变换得到最终输出

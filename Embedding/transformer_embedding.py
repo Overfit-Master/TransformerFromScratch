@@ -12,12 +12,12 @@ class TransformerEmbedding(nn.Module):
         self.token_embedding = TokenEmbedding(vocab_size, d_model)
         self.positional_embedding = PositionalEmbedding( d_model, max_len, device)
         self.dropout = nn.Dropout(p=drop_prob)
-        self.d_moel = d_model
+        self.d_model = d_model
 
     def forward(self, x):
         token_emb = self.token_embedding(x)    # 调用父类 nn.Embedding 的forward
         position_emb = self.positional_embedding(x)
 
         # 将 token embedding 进行 scale 后再和 positional embedding 相加
-        token_emb = token_emb * math.sqrt(self.d_moel)
+        token_emb = token_emb * math.sqrt(self.d_model)
         return self.dropout(token_emb + position_emb)
